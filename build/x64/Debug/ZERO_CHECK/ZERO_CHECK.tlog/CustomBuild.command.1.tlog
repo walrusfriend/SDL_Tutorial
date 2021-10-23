@@ -1,0 +1,10 @@
+^C:\USERS\USER\DESKTOP\THRASH\SDL_TUTORIAL\BUILD\CMAKEFILES\5544231008E2BAC78BFBC088D139B1E0\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/User/Desktop/thrash/SDL_Tutorial -BC:/Users/User/Desktop/thrash/SDL_Tutorial/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/User/Desktop/thrash/SDL_Tutorial/build/SDL_Tutorial.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

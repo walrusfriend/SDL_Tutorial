@@ -1,0 +1,10 @@
+^C:\USERS\USER\DESKTOP\THRASH\SDL_TUTORIAL\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/User/Desktop/thrash/SDL_Tutorial -BC:/Users/User/Desktop/thrash/SDL_Tutorial/build --check-stamp-file C:/Users/User/Desktop/thrash/SDL_Tutorial/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
