@@ -1,3 +1,0 @@
-C:/Users/User/Desktop/thrash/SDL_Tutorial/CMakeFiles/SDL_Tutorial.dir
-C:/Users/User/Desktop/thrash/SDL_Tutorial/CMakeFiles/ALL_BUILD.dir
-C:/Users/User/Desktop/thrash/SDL_Tutorial/CMakeFiles/ZERO_CHECK.dir
