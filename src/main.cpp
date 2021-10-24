@@ -1,70 +1,36 @@
 #include "../headers/main.h"
-
-// Set screen size
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+#include "../headers/character.h"
 
 // Set tile size
 const int TILE_SIZE = 40;
 
 // Set path to images folder
-std::string imagesPath = "./images/";
-std::string fontsPath = "./fonts/";
-// std::string imagesPath = "../images/";
+std::string imagesPath = "images/";
+std::string fontsPath = "fonts/";
 
-struct Position {
-    int x;
-    int y;
-};
-
-enum Directions {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-    UP_LEFT,
-    UP_RIGHT,
-    DOWN_LEFT,
-    DOWN_RIGHT
-};
+// If debug from vs code
+// #define DEBUG_VS_CODE
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
 // Function defenition
+bool init();
 SDL_Texture* loadImage(std::string&& path);
-void applySurface(int x, int y, SDL_Texture* texture);
 void renderTexture(SDL_Texture* texture, int x, int y, int w, int h);
 void renderTexture(SDL_Texture* texture, SDL_Rect dest, SDL_Rect* clip = nullptr);
 void renderTexture(SDL_Texture* texture, int x, int y, SDL_Rect* clip = nullptr);
 void cleanup();
 
 void renderBackground(SDL_Texture* background);
-bool checkCollision(const Position& pos, int size);
-void charMove(Position& charPos, int charSize, int charStepSize, int direction);
+bool checkCollisionWithBorders(const Character& pers);
 SDL_Texture* renderText(const std::string& message, TTF_Font* font, SDL_Color color);
 void cerrErrorSDL(std::string&& str) { std::cout << str + " Error: " << SDL_GetError() << std::endl; }
 
 int main(int argc, char** argv) {
-    // Initialize SDL
-    if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
-        cerrErrorSDL("SDL_Init");
-        return 1;
-    }
-    
-    // Initialize SDL_Image module
-    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        cerrErrorSDL("IMG_Init");
-        SDL_Quit();
-        return 1;
-    }
 
-    // Initialize TTF module
-    if (TTF_Init() != 0) {
-        cerrErrorSDL("TTF module");
-        SDL_Quit();
+    if (init() == false)
         return 1;
-    }
 
     // Create window
     window = SDL_CreateWindow("SDL_Tutorial", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -81,38 +47,39 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+#ifdef DEBUG_VS_CODE
+    imagesPath = "../images/";
+    fontsPath = "../fonts/";
+#endif
+
+    // Chatacter
+    std::unique_ptr<Character> person(new Character);
+    person->width = 100;
+    person->height = 100;
+    int x = (SCREEN_WIDTH - person->width) / 2;
+    int y = (SCREEN_HEIGHT - person->height) / 2;
+    person->x = x;
+    person->y = y;
+    person->stepSize = 10;
+
     // Load texture
     SDL_Texture* background = nullptr;
-    SDL_Texture* character = nullptr;
 
     background = loadImage("background.png");
-    character = loadImage("ball.png");
-    if (!background || !character) {
+    person->texture = loadImage("ball.png");
+    if (!background || !person->texture) {
         SDL_DestroyTexture(background);
-        SDL_DestroyTexture(character);
+        SDL_DestroyTexture(person->texture);
         cleanup();
         return 1;
     }
-
-    bool quit = false;
-    SDL_Event event;
-
-    int iW = 100;
-    int iH = 100;
-    int x = (SCREEN_WIDTH - iW) / 2;
-    int y = (SCREEN_HEIGHT - iH) / 2;
-
-    // Chatacter pos
-    Position charPos {x, y};
-    int charStepSize = 10;
-    int charSize = 100;
-
+    
     SDL_Rect clips[4];
     for (int i = 0; i < 4; ++i) {
-        clips[i].x = i / 2 * iW;
-        clips[i].y = i % 2 * iH;
-        clips[i].w = iW;
-        clips[i].h = iH;
+        clips[i].x = i / 2 * person->width;
+        clips[i].y = i % 2 * person->height;
+        clips[i].w = person->width;
+        clips[i].h = person->height;
     }
 
     int useClip = 0;
@@ -136,6 +103,8 @@ int main(int argc, char** argv) {
     int fontX = (SCREEN_WIDTH - fontWidth) / 2;
     int fontY = 0;
 
+    bool quit = false;
+    SDL_Event event;
 
     // main loop
     while (!quit) {
@@ -145,6 +114,7 @@ int main(int argc, char** argv) {
                 quit = true;
             }
             if (event.type == SDL_KEYDOWN) {
+                // TODO When a key is hold figure must move without interruptions
                 const uint8_t* state = SDL_GetKeyboardState(NULL);
                 // Diagional movement
                 if (state[SDL_SCANCODE_1])
@@ -156,21 +126,29 @@ int main(int argc, char** argv) {
                 else if (state[SDL_SCANCODE_4])
                     useClip = 3;
                 else if (state[SDL_SCANCODE_W] and state[SDL_SCANCODE_A])
-                    charMove(charPos, charSize, charStepSize, UP_LEFT);
+                    person->move(UP_LEFT);
+                    // charMove(charPos, charSize, charStepSize, UP_LEFT);
                 else if (state[SDL_SCANCODE_W] and state[SDL_SCANCODE_D])
-                    charMove(charPos, charSize, charStepSize, UP_RIGHT);
+                    person->move(UP_RIGHT);
+                    // charMove(charPos, charSize, charStepSize, UP_RIGHT);
                 else if (state[SDL_SCANCODE_S] and state[SDL_SCANCODE_A])
-                    charMove(charPos, charSize, charStepSize, DOWN_LEFT);
+                    person->move(DOWN_LEFT);
+                    // charMove(charPos, charSize, charStepSize, DOWN_LEFT);
                 else if (state[SDL_SCANCODE_S] and state[SDL_SCANCODE_D])
-                    charMove(charPos, charSize, charStepSize, DOWN_RIGHT);
+                    person->move(DOWN_RIGHT);
+                    // charMove(charPos, charSize, charStepSize, DOWN_RIGHT);
                 else if (state[SDL_SCANCODE_W])
-                    charMove(charPos, charSize, charStepSize, UP);
+                    person->move(UP);
+                    // charMove(charPos, charSize, charStepSize, UP);
                 else if (state[SDL_SCANCODE_S])
-                    charMove(charPos, charSize, charStepSize, DOWN);
+                    person->move(DOWN);
+                    // charMove(charPos, charSize, charStepSize, DOWN);
                 else if (state[SDL_SCANCODE_A])
-                    charMove(charPos, charSize, charStepSize, LEFT);
+                    person->move(LEFT);
+                    // charMove(charPos, charSize, charStepSize, LEFT);
                 else if (state[SDL_SCANCODE_D])
-                    charMove(charPos, charSize, charStepSize, RIGHT);
+                    person->move(RIGHT);
+                    // charMove(charPos, charSize, charStepSize, RIGHT);
                 else if (state[SDL_SCANCODE_ESCAPE])
                     quit = true;
             }
@@ -180,7 +158,7 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         renderBackground(background);
         renderTexture(textImage, fontX, fontY);
-        renderTexture(character, charPos.x, charPos.y, &clips[useClip]);
+        renderTexture(person->texture, person->x, person->y, &clips[useClip]);
         SDL_RenderPresent(renderer);
 
         // Free CPU resources
@@ -190,6 +168,31 @@ int main(int argc, char** argv) {
     cleanup();
 
     return 0;
+}
+
+/**
+ * Initialization of SDL and its components
+ * @return Returns true if all right else return false
+ */
+bool init() {
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
+        cerrErrorSDL("SDL_Init");
+        return false;
+    }
+    
+    // Initialize SDL_Image module
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+        cerrErrorSDL("IMG_Init");
+        return false;
+    }
+
+    // Initialize TTF module
+    if (TTF_Init() != 0) {
+        cerrErrorSDL("TTF module");
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -295,7 +298,7 @@ void renderBackground(SDL_Texture* background) {
  * @param size  Size of texture
  * @return      True if hit else false
  */
-bool checkCollision(const Position& pos, int size) {
+/*bool checkCollision(const Position& pos, int size) {
     // Check X direction
     if (pos.x < 0 or pos.x + size > SCREEN_WIDTH)
         return true;
@@ -305,10 +308,16 @@ bool checkCollision(const Position& pos, int size) {
         return true;
 
     return false;
-}
+}*/
 
-void charMove(Position& charPos, int charSize, int charStepSize, int direction) {
+/*void charMove(Position& charPos, int charSize, int charStepSize, int direction) {
     Position nextPos = {charPos.x, charPos.y};
+
+    // When we step on diagonal direction, an object move at a distance of hypotenuse
+    // Therefore, need to define the value of X and Y components
+    Position diagPos = nextPos;
+    float rootOf2 = 1.41421356237f;                 // The root of 2 required to calculate the diagonal distance
+    int diagStepSize = charStepSize / rootOf2;      // We must convert from float to int
     switch (direction) {
         case UP:
             nextPos.y -= charStepSize;
@@ -331,26 +340,26 @@ void charMove(Position& charPos, int charSize, int charStepSize, int direction) 
                 charPos = nextPos;
             break;
         case UP_LEFT:
-            charMove(charPos, charSize, charStepSize, UP);
-            charMove(charPos, charSize, charStepSize, LEFT);
+            charMove(charPos, charSize, diagStepSize, UP);
+            charMove(charPos, charSize, diagStepSize, LEFT);
             break;
         case UP_RIGHT:
-            charMove(charPos, charSize, charStepSize, UP);
-            charMove(charPos, charSize, charStepSize, RIGHT);
+            charMove(charPos, charSize, diagStepSize, UP);
+            charMove(charPos, charSize, diagStepSize, RIGHT);
             break;
         case DOWN_LEFT:
-            charMove(charPos, charSize, charStepSize, DOWN);
-            charMove(charPos, charSize, charStepSize, LEFT);
+            charMove(charPos, charSize, diagStepSize, DOWN);
+            charMove(charPos, charSize, diagStepSize, LEFT);
             break;
         case DOWN_RIGHT:
-            charMove(charPos, charSize, charStepSize, DOWN);
-            charMove(charPos, charSize, charStepSize, RIGHT);
+            charMove(charPos, charSize, diagStepSize, DOWN);
+            charMove(charPos, charSize, diagStepSize, RIGHT);
             break;
         default:
             std::cerr << "ERROR: Character movement error!" << std::endl;
             break;
     }
-}
+}*/
 
 /**
  * Draw a text to the screen
