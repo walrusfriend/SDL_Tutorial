@@ -17,6 +17,13 @@ set(SDL2_image_DIR C:/libs/SDL2)
 # Point to source files
 set(SOURCES src/main.cpp)
 
+# Point to header files
+set(HEADERS headers/*.h)
+include_directories(${HEADERS})
+
+# Include TTF module
+set(SDL_ttf_LIBRARY C:/libs/SDL2/lib/x64/SDL2_ttf.lib)
+
 # Try to find SDL2 package
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -25,4 +32,4 @@ find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 
 add_executable(SDL_Tutorial ${SOURCES})
-target_link_libraries(SDL_Tutorial ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+target_link_libraries(SDL_Tutorial PUBLIC ${HEADERS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL_ttf_LIBRARY})
