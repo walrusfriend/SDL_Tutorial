@@ -8,6 +8,11 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "setting.h"
+
+// If debug from vs code
+// #define DEBUG_VS_CODE
+
 enum Directions {
     UP,
     DOWN,
@@ -19,9 +24,8 @@ enum Directions {
     DOWN_RIGHT
 };
 
-// Set screen size
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
 // Without this we have an error LNK2019: external unresolved symbol main
 #undef main
+
+// Global functions
+void cerrErrorSDL(std::string&& str);
