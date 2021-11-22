@@ -30,6 +30,7 @@ public:
     SpriteInfo spriteInfo;
 
     // Physics parameters
+    float velocity;
     float velocityX;
     float velocityY;
     bool isMove;
@@ -38,7 +39,10 @@ public:
     Character();
     ~Character();
 
-    void move(int direction, double dt);
+    void move(double dt);
     void scale(int zoom);
     void checkCollisionWithBorders();
+
+private:
+    const uint8_t* keyboardState;
 };

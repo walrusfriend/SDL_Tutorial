@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
 #include <iso646.h>
 #include <memory>
 
@@ -9,9 +10,6 @@
 #include <SDL_ttf.h>
 
 #include "setting.h"
-
-// If debug from vs code
-// #define DEBUG_VS_CODE
 
 enum Directions {
     UP,
@@ -27,5 +25,5 @@ enum Directions {
 // Without this we have an error LNK2019: external unresolved symbol main
 #undef main
 
-// Global functions
-void cerrErrorSDL(std::string&& str);
+// Send error to the cerr output stream
+void cerrErrorSDL(std::string&& str);           

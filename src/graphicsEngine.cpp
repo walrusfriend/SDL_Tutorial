@@ -1,12 +1,5 @@
 #include "../headers/graphicsEngine.h"
 
-// Set path to images folder
-#ifdef DEBUG_VS_CODE
-    std::string imagesPath = "../images/";
-#else
-    std::string imagesPath = "images/";
-#endif
-
 GraphicsEngine::GraphicsEngine() {
     // Create window
     window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -18,6 +11,16 @@ GraphicsEngine::GraphicsEngine() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr)
         cerrErrorSDL("Create Renderer");
+
+    // Set path to images folder
+    if (vscodeDebug) {
+        imagesPath = "../images/";
+        fontsPath = "../fonts/";
+    }
+    else {
+        imagesPath = "images/";
+        fontsPath = "fonts/";
+    }
 }
 
 GraphicsEngine::~GraphicsEngine() {
@@ -167,4 +170,25 @@ void GraphicsEngine::renderClear() {
  */
 void GraphicsEngine::renderUpdate() {
     SDL_RenderPresent(renderer);
+}
+
+bool GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
+    TTF_Font* font = TTF_OpenFont((fontsPath + fontName).c_str(), fontSize);
+    if (font == nullptr) {
+        cerrErrorSDL("Open font");
+        return false;
+    }
+    fonts.insert({fontName, font});
+    return true;
+}
+
+TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
+    auto search = fonts.find(fontName);
+    if (search != fonts.end()) {
+        return search->second;
+    }
+    else {
+        return nullptr;
+    }
+    
 }

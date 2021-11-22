@@ -1,5 +1,8 @@
 #include "../headers/physicsEngine.h"
 
+PhysicsEngine::PhysicsEngine() {};
+PhysicsEngine::~PhysicsEngine() {};
+
 /**
  * @brief Check for hit to a borders of the window
  * @param pers  Reference to the Character object

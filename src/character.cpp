@@ -19,9 +19,12 @@ Character::Character() {
     spriteInfo.useWalkClip = 0;
     spriteInfo.clipsNumber = 0;
 
+    velocity = 250;
     velocityX = 0;
     velocityY = 0;
     isMove = false;
+
+    keyboardState = SDL_GetKeyboardState(NULL); 
 }
 
 Character::~Character() {
@@ -33,63 +36,95 @@ Character::~Character() {
  * @param direction Direction to move
  * @return          None
  */
-void Character::move(int direction, double dt) {
+void Character::move(double dt) {
     // When we step on diagonal direction, an object move at a distance of hypotenuse
     // Therefore, need to define the value of X and Y components
     float rootOf2 = 1.41421356237f;             // The root of 2 required to calculate the diagonal distance
     int diagStepSize = stepSize / rootOf2;
-    // We must convert from float to int
     int oldStep = stepSize;
-    double velocity = 250.0;
-    switch (direction) {
-        case UP:
-            velocityY = -velocity;
-            size.y += velocityY * dt;
+
+    // TODO Fix priority of the W and A
+    if (isMove) {
+        if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_A]) {
+            size.y += -velocity * dt / rootOf2;
+            size.x += -velocity * dt / rootOf2;
             checkCollisionWithBorders();
-            break;
-        case DOWN:
-            velocityY = velocity;
-            size.y += velocityY * dt;
+        }
+        else if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_D]) {
+            size.y += -velocity * dt / rootOf2;
+            size.x += velocity * dt / rootOf2;
             checkCollisionWithBorders();
-            break;
-        case LEFT:
-            velocityX = -velocity;
-            size.x += velocityX * dt;
+        }
+        else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_A]) {
+            size.y += velocity * dt / rootOf2;
+            size.x += -velocity * dt / rootOf2;
             checkCollisionWithBorders();
-            break;
-        case RIGHT:
-            velocityX = velocity;
-            size.x += velocityX * dt;
+        }
+        else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_D]) {
+            size.y += velocity * dt / rootOf2;
+            size.x += velocity * dt / rootOf2;
             checkCollisionWithBorders();
-            break;
-        case UP_LEFT:
-            // stepSize = diagStepSize;
-            move(UP, dt);
-            move(LEFT, dt);
-            // stepSize = oldStep;
-            break;
-        case UP_RIGHT:
-            // stepSize = diagStepSize;
-            move(UP, dt);
-            move(RIGHT, dt);
-            // stepSize = oldStep;
-            break;
-        case DOWN_LEFT:
-            // stepSize = diagStepSize;
-            move(DOWN, dt);
-            move(LEFT, dt);
-            // stepSize = oldStep;
-            break;
-        case DOWN_RIGHT:
-            // stepSize = diagStepSize;
-            move(DOWN, dt);
-            move(RIGHT, dt);
-            // stepSize = oldStep;
-            break;
-        default:
-            std::cerr << "ERROR: Character movement error!" << std::endl;
-            break;
-    }
+        }
+        else if (keyboardState[SDL_SCANCODE_W]) {
+            size.y += -velocity * dt;
+            checkCollisionWithBorders();
+        }
+        else if (keyboardState[SDL_SCANCODE_S]) {
+            size.y += velocity * dt;
+            checkCollisionWithBorders();
+        }
+        else if (keyboardState[SDL_SCANCODE_A]) {
+            size.x += -velocity * dt;
+            checkCollisionWithBorders();
+        }
+        else if (keyboardState[SDL_SCANCODE_D]) {
+            size.x += velocity * dt;
+            checkCollisionWithBorders();
+        }
+    }   
+
+    // switch (direction) {
+    //     case UP:
+    //         size.y += -velocity * dt;
+    //         checkCollisionWithBorders();
+    //         break;
+    //     case DOWN:
+    //         size.y += velocity * dt;
+    //         checkCollisionWithBorders();
+    //         break;
+    //     case LEFT:
+    //         size.x += -velocity * dt;
+    //         checkCollisionWithBorders();
+    //         break;
+    //     case RIGHT:
+    //         size.x += velocity * dt;
+    //         checkCollisionWithBorders();
+    //         break;
+    //     case UP_LEFT:
+    //         // stepSize = diagStepSize;
+    //         move(UP, dt);
+    //         move(LEFT, dt);
+    //         // stepSize = oldStep;
+    //         break;
+    //     case UP_RIGHT:
+    //         // stepSize = diagStepSize;
+    //         move(UP, dt);
+    //         move(RIGHT, dt);
+    //         // stepSize = oldStep;
+    //         break;
+    //     case DOWN_LEFT:
+    //         // stepSize = diagStepSize;
+    //         move(DOWN, dt);
+    //         move(LEFT, dt);
+    //         // stepSize = oldStep;
+    //         break;
+    //     case DOWN_RIGHT:
+    //         // stepSize = diagStepSize;
+    //         move(DOWN, dt);
+    //         move(RIGHT, dt);
+    //         // stepSize = oldStep;
+    //         break;
+    // }
 }
 
 /**

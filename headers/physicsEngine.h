@@ -6,10 +6,9 @@
 class PhysicsEngine {
 
 public:
-    static bool checkCollisionWithBorders(const Character& pers);
-
-private:
     PhysicsEngine();
     PhysicsEngine(const PhysicsEngine&);
     ~PhysicsEngine();
+    
+    static bool checkCollisionWithBorders(const Character& pers);
 };

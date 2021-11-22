@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.h"
+#include <map>
 
 class GraphicsEngine {
 
@@ -18,7 +19,17 @@ public:
     void renderClear();
     void renderUpdate();
 
+    bool addFont(const std::string& fontName, const int& fontSize);
+    TTF_Font* getFont(const std::string& fontName);
+
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
+
+    // Resource paths
+    std::string imagesPath;
+    std::string fontsPath;
+
+    // Fonts
+    std::map<std::string, TTF_Font*> fonts;
 };
