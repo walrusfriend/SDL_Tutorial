@@ -1,0 +1,1 @@
+To render a part of the screen use renderViewport

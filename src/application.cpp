@@ -1,4 +1,6 @@
 #include "../headers/application.h"
+ 
+ // TODO Store all textures in one place (I don't know where yet)
 
 Application::Application() {
 }
@@ -51,8 +53,7 @@ void Application::run() {
     backgroundTile = gpxEngine->loadImage("basictiles.png");
     player->texture = gpxEngine->loadImage("player/swordman.png");
     if (!backgroundTile || !player->texture) {
-        SDL_DestroyTexture(backgroundTile);
-        SDL_DestroyTexture(player->texture);
+        gpxEngine->destroyAllTextures();
         cleanup();
         return;
     }
@@ -65,6 +66,7 @@ void Application::run() {
     SDL_Texture* textImage;
     textImage = gpxEngine->renderText("Best Rogue Like ever!", gpxEngine->getFont("font.ttf"), fontColor);
     if (textImage == nullptr) {
+        gpxEngine->destroyAllTextures();
         cleanup();
         return;
     }
@@ -74,6 +76,7 @@ void Application::run() {
     SDL_QueryTexture(textImage, nullptr, nullptr, &fontWidth, &fontHeight);
     int fontX = (SCREEN_WIDTH - fontWidth) / 2;
     int fontY = 10;
+
 
     bool quit = false;
     SDL_Event event;
@@ -93,57 +96,23 @@ void Application::run() {
             double deltaTime = std::min(frameTime, dt);
 
             // Event processing
-            // while(SDL_PollEvent(&event)) {
-            if (SDL_PollEvent(&event)) {
+            while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
                     quit = true;
                 }
-            }
-                // if (event.type == SDL_KEYDOWN) {
+
+                if (event.type == SDL_KEYDOWN) {
                     if (state[SDL_SCANCODE_W] or state[SDL_SCANCODE_S] or state[SDL_SCANCODE_A] or state[SDL_SCANCODE_D])
                         player->isMove = true;
-                    // else
-                    //     player->isMove = false;
-                // }
+                    else
+                        player->isMove = false;
+                }
+            }
 
-                player->move(deltaTime);
-                // if (player->isMove) {
-                //     if (state[SDL_SCANCODE_W] and state[SDL_SCANCODE_A])
-                //         player->move(UP_LEFT, deltaTime);
-                //     else if (state[SDL_SCANCODE_W] and state[SDL_SCANCODE_D])
-                //         player->move(UP_RIGHT, deltaTime);
-                //     else if (state[SDL_SCANCODE_S] and state[SDL_SCANCODE_A])
-                //         player->move(DOWN_LEFT, deltaTime);
-                //     else if (state[SDL_SCANCODE_S] and state[SDL_SCANCODE_D])
-                //         player->move(DOWN_RIGHT, deltaTime);
-                //     else if (state[SDL_SCANCODE_W])
-                //         player->move(UP, deltaTime);
-                //     else if (state[SDL_SCANCODE_S])
-                //         player->move(DOWN, deltaTime);
-                //     else if (state[SDL_SCANCODE_A])
-                //         player->move(LEFT, deltaTime);
-                //     else if (state[SDL_SCANCODE_D])
-                //         player->move(RIGHT, deltaTime);
-                // }   
+            player->move(deltaTime);
 
-                if (state[SDL_SCANCODE_ESCAPE])
-                    quit = true;
-
-                // If we release the key the player will have to stop
-                // If the manipulating key still pressed when player stops
-                // in the moment of one cycle and then will start again
-                // if (event.type == SDL_KEYUP) {
-                //     // if (!(state[SDL_SCANCODE_W] or state[SDL_SCANCODE_S] or state[SDL_SCANCODE_A] or state[SDL_SCANCODE_D])) {
-                //         player->isMove = false;
-                //         if (player->velocityX != 0) {
-                //             player->velocityX = 0;
-                //         }
-
-                //         if (player->velocityY != 0) {
-                //             player->velocityY = 0;
-                //         }
-                //     // }
-                // }
+            if (state[SDL_SCANCODE_ESCAPE])
+                quit = true;
 
             frameTime -= deltaTime;
             t += deltaTime;

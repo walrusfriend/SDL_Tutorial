@@ -29,7 +29,8 @@ GraphicsEngine::~GraphicsEngine() {
 }
 
 /**
- * Load texture from file on the path "path"
+ * @brief Load texture from file on the path "path" to texture map
+ * 
  * @param  path     Path to the file
  * @return          Returns texture or nullptr if error occurred
 */
@@ -39,7 +40,52 @@ SDL_Texture* GraphicsEngine::loadImage(std::string&& path) {
     if (!texture) {
         cerrErrorSDL("Load Image");
     }
+    textures.insert({path, texture});
     return texture;
+}
+
+/**
+ * @brief Free memory from an image
+ * 
+ * @param texture The texture file name with a format (*.png, etc)
+ */
+void GraphicsEngine::unloadImage(std::string&& path) {
+    auto texture = textures.find(path);
+    if (texture != textures.end()) {
+        SDL_DestroyTexture(texture->second);
+        textures.erase(texture);
+    }
+    else {
+        std::cerr << "Can't unload image: The texture with that name." << std::endl;
+    }
+}
+
+/**
+ * @brief Get the texture from the texture map by the name
+ * 
+ * @param textureName   The texture file name with a format (*.png, etc.)
+ * @return SDL_Texture  Pointer to the texture or nullptr if it doesn't exist
+ */
+SDL_Texture* GraphicsEngine::getImage(const std::string& textureName) {
+    auto search = textures.find(textureName);
+    if (search != textures.end()) {
+        return search->second;
+    }
+    else {
+        std::cerr << "Can't get texture: The texture with that name does not exist." << std::endl;
+        return nullptr;
+    }
+}
+
+/**
+ * @brief Free memory from all textures
+ * 
+ */
+void GraphicsEngine::destroyAllTextures() {
+    for (auto i : textures) {
+        SDL_DestroyTexture(i.second);
+    }
+    textures.clear();
 }
 
 /**
@@ -172,6 +218,14 @@ void GraphicsEngine::renderUpdate() {
     SDL_RenderPresent(renderer);
 }
 
+/**
+ * @brief Add a font to the map with all fonts
+ * 
+ * @param fontName  The file name of the font with a format (*.ttf)
+ * @param fontSize  The size of the font
+ * @return true     If all font is normally loaded
+ * @return false    If coundn't open the font
+ */
 bool GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
     TTF_Font* font = TTF_OpenFont((fontsPath + fontName).c_str(), fontSize);
     if (font == nullptr) {
@@ -182,6 +236,12 @@ bool GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
     return true;
 }
 
+/**
+ * @brief Get the font from the map with all font by the name
+ * 
+ * @param fontName      The file name of the font with a format (*.ttf)
+ * @return TTF_Font*    Pointer to TTF-file with font or nullptr if font doesn't exist
+ */
 TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     auto search = fonts.find(fontName);
     if (search != fonts.end()) {
@@ -190,5 +250,10 @@ TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     else {
         return nullptr;
     }
+    
+}
+
+
+void GraphicsEngine::drawSprite(const Character& person) {
     
 }

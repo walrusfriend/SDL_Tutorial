@@ -81,50 +81,9 @@ void Character::move(double dt) {
             size.x += velocity * dt;
             checkCollisionWithBorders();
         }
+        else
+            isMove = false;
     }   
-
-    // switch (direction) {
-    //     case UP:
-    //         size.y += -velocity * dt;
-    //         checkCollisionWithBorders();
-    //         break;
-    //     case DOWN:
-    //         size.y += velocity * dt;
-    //         checkCollisionWithBorders();
-    //         break;
-    //     case LEFT:
-    //         size.x += -velocity * dt;
-    //         checkCollisionWithBorders();
-    //         break;
-    //     case RIGHT:
-    //         size.x += velocity * dt;
-    //         checkCollisionWithBorders();
-    //         break;
-    //     case UP_LEFT:
-    //         // stepSize = diagStepSize;
-    //         move(UP, dt);
-    //         move(LEFT, dt);
-    //         // stepSize = oldStep;
-    //         break;
-    //     case UP_RIGHT:
-    //         // stepSize = diagStepSize;
-    //         move(UP, dt);
-    //         move(RIGHT, dt);
-    //         // stepSize = oldStep;
-    //         break;
-    //     case DOWN_LEFT:
-    //         // stepSize = diagStepSize;
-    //         move(DOWN, dt);
-    //         move(LEFT, dt);
-    //         // stepSize = oldStep;
-    //         break;
-    //     case DOWN_RIGHT:
-    //         // stepSize = diagStepSize;
-    //         move(DOWN, dt);
-    //         move(RIGHT, dt);
-    //         // stepSize = oldStep;
-    //         break;
-    // }
 }
 
 /**

@@ -4,7 +4,7 @@
 // Function prototype
 std::vector<std::string> parseApplicationInput(int argc, char** argv);
 
-int main(int argc, char** argv) {
+int main(int argc, char* argv[]) {
 
     // TODO Use "argc" and "argv" to setup debug mode or something else
     // Read the input and convert it to a normal types
