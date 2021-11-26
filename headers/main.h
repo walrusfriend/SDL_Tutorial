@@ -10,6 +10,7 @@
 #include <SDL_ttf.h>
 
 #include "setting.h"
+#include "wtexture.h"
 
 enum Directions {
     UP,
@@ -24,6 +25,8 @@ enum Directions {
 
 // Without this we have an error LNK2019: external unresolved symbol main
 #undef main
+
+extern bool vscodeDebug;
 
 // Send error to the cerr output stream
 void cerrErrorSDL(std::string&& str);           

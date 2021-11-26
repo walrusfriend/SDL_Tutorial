@@ -47,12 +47,20 @@ void Application::run() {
     playerSetup(player);
 
     // Load texture
-    // TODO MEMORY LEAK
-    SDL_Texture* backgroundTile;
+    std::unique_ptr<WTexture> backgroundTile(new WTexture(gpxEngine->loadImage("basictiles.png")));
 
-    backgroundTile = gpxEngine->loadImage("basictiles.png");
-    player->texture = gpxEngine->loadImage("player/swordman.png");
-    if (!backgroundTile || !player->texture) {
+    // TODO Wrap this in more useful gpx engine method
+    // If we want to delete background of the texture that do this
+    SDL_Surface* surf = IMG_Load("images/player/swordman_white_back.png");
+    if (surf == nullptr) {
+        std::cout << " Error: " << SDL_GetError() << std::endl; 
+        return;
+    }
+    SDL_SetColorKey(surf, SDL_TRUE, SDL_MapRGB(surf->format, 0xFF, 0xFF, 0xFF));
+    player->texture->setTexture(SDL_CreateTextureFromSurface(gpxEngine->getRenderer(), surf));
+
+    // player->texture->setTexture(gpxEngine->loadImage("player/swordman.png"));
+    if (!backgroundTile->getTexture() || !player->texture->getTexture()) {
         gpxEngine->destroyAllTextures();
         cleanup();
         return;
@@ -62,10 +70,9 @@ void Application::run() {
     gpxEngine->addFont("font.ttf", 48);
 
     SDL_Color fontColor = {255, 255, 255, 255};
-    // TODO MEMORY LEAK
-    SDL_Texture* textImage;
-    textImage = gpxEngine->renderText("Best Rogue Like ever!", gpxEngine->getFont("font.ttf"), fontColor);
-    if (textImage == nullptr) {
+    std::unique_ptr<WTexture> textImage(new WTexture());
+    textImage->setTexture(gpxEngine->renderText("Best Rogue Like ever!", gpxEngine->getFont("font.ttf"), fontColor));
+    if (textImage->getTexture() == nullptr) {
         gpxEngine->destroyAllTextures();
         cleanup();
         return;
@@ -73,7 +80,9 @@ void Application::run() {
 
     int fontWidth;
     int fontHeight;
-    SDL_QueryTexture(textImage, nullptr, nullptr, &fontWidth, &fontHeight);
+    SDL_QueryTexture(textImage->getTexture(), nullptr, nullptr, &fontWidth, &fontHeight);
+    textImage->setWidth(fontWidth);
+    textImage->setHeigth(fontHeight);
     int fontX = (SCREEN_WIDTH - fontWidth) / 2;
     int fontY = 10;
 
@@ -120,9 +129,10 @@ void Application::run() {
 
         // Clear window
         gpxEngine->renderClear();
-        gpxEngine->renderBackground(backgroundTile);
-        gpxEngine->renderTexture(textImage, fontX, fontY);
-        gpxEngine->renderTexture(player->texture, player->size, &player->spriteInfo.walkSprite[player->spriteInfo.useWalkClip]);
+        gpxEngine->renderBackground(backgroundTile->getTexture());
+        gpxEngine->renderTexture(textImage->getTexture(), fontX, fontY);
+        gpxEngine->renderTexture(player->texture->getTexture(), player->size, 
+                                &player->spriteInfo.walkSprite[player->spriteInfo.useWalkClip]);
         gpxEngine->renderUpdate();
 
         // Free CPU resources

@@ -22,17 +22,15 @@ public:
     int stepSize;
 
     // Texture settings
-    SDL_Texture* texture;
+    std::unique_ptr<WTexture> texture;
     int walkTextureSize;
     int attackTextureSize;
 
-    // Info about character texture
+    // Info about character sprite
     SpriteInfo spriteInfo;
 
     // Physics parameters
     float velocity;
-    float velocityX;
-    float velocityY;
     bool isMove;
 
 public:

@@ -5,9 +5,6 @@
 
 // TODO Make .json with parameters whitc will be loaded when program is start
 
-// Debug mode
-static bool vscodeDebug;
-
 // Set screen size
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 800;

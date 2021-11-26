@@ -29,6 +29,9 @@ public:
 
     void drawSprite(const Character& person);
 
+    // TODO delete this
+    SDL_Renderer* getRenderer() { return renderer; }
+
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;

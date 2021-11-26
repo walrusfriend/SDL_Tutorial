@@ -39,6 +39,7 @@ SDL_Texture* GraphicsEngine::loadImage(std::string&& path) {
     SDL_Texture* texture = IMG_LoadTexture(renderer, (imagesPath + path).c_str());
     if (!texture) {
         cerrErrorSDL("Load Image");
+        return texture;
     }
     textures.insert({path, texture});
     return texture;

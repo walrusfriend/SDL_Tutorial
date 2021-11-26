@@ -1,6 +1,9 @@
 #include "../headers/main.h"
 #include "../headers/application.h"
 
+// Global variables
+bool vscodeDebug = false;
+
 // Function prototype
 std::vector<std::string> parseApplicationInput(int argc, char** argv);
 
@@ -28,7 +31,15 @@ int main(int argc, char* argv[]) {
 // TODO Finish this feature
 std::vector<std::string> parseApplicationInput(int argc, char** argv) {
     std::vector<std::string> vec;
-    vscodeDebug = false;
+
+    for (int i = 1; i < argc; ++i) {
+        vec.push_back(argv[i]);
+    }
+
+    auto result = std::find(vec.begin(), vec.end(), "--debug");
+    if (result != vec.end()) {
+        vscodeDebug = true;
+    }
     return vec;
 }
 

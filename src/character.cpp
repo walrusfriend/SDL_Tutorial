@@ -7,7 +7,7 @@ Character::Character() {
     size.w = 0;
     size.h = 0;
     stepSize = 0;
-    texture = nullptr;
+    texture.reset(new WTexture());
 
     prevSize = size;
 
@@ -20,15 +20,12 @@ Character::Character() {
     spriteInfo.clipsNumber = 0;
 
     velocity = 250;
-    velocityX = 0;
-    velocityY = 0;
     isMove = false;
 
     keyboardState = SDL_GetKeyboardState(NULL); 
 }
 
 Character::~Character() {
-    SDL_DestroyTexture(texture);
 }
 
 /**
