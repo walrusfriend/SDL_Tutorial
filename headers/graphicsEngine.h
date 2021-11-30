@@ -15,6 +15,7 @@ public:
     void unloadImage(std::string&& path);
     SDL_Texture* getImage(const std::string& textureName);
     void destroyAllTextures();
+    // TODO Replace all SDL_Texture with its wrappers
     void renderTexture(SDL_Texture* texture, int x, int y, int w, int h);
     void renderTexture(SDL_Texture* texture, SDL_Rect dest, SDL_Rect* clip = nullptr);
     void renderTexture(SDL_Texture* texture, int x, int y, SDL_Rect* clip = nullptr);

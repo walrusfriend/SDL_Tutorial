@@ -57,6 +57,7 @@ void Application::run() {
         return;
     }
     SDL_SetColorKey(surf, SDL_TRUE, SDL_MapRGB(surf->format, 0xFF, 0xFF, 0xFF));
+
     player->texture->setTexture(SDL_CreateTextureFromSurface(gpxEngine->getRenderer(), surf));
 
     // player->texture->setTexture(gpxEngine->loadImage("player/swordman.png"));
@@ -94,16 +95,19 @@ void Application::run() {
     // Setup the timings
     double t = 0.0;
     double dt = 1/60.0;
-    double currentTime = SDL_GetTicks() * 1000;     // Turn to seconds
+    double currentTime = SDL_GetTicks() / 1000.0;     // Turn to seconds
+
+    // TODO Delete this
+    int frame = 0;
 
     while (!quit) {
-        double newTime = SDL_GetTicks() * 1000;     // Turn to seconds
+        double newTime = SDL_GetTicks() / 1000.0;     // Turn to seconds
         double frameTime = newTime - currentTime;
         currentTime = newTime;
 
-        // while (frameTime > 0.0) {
+        while(frameTime > 0.0) {
             double deltaTime = std::min(frameTime, dt);
-
+            
             // Event processing
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
@@ -125,18 +129,29 @@ void Application::run() {
 
             frameTime -= deltaTime;
             t += deltaTime;
-        // }
+        }
 
         // Clear window
         gpxEngine->renderClear();
         gpxEngine->renderBackground(backgroundTile->getTexture());
         gpxEngine->renderTexture(textImage->getTexture(), fontX, fontY);
         gpxEngine->renderTexture(player->texture->getTexture(), player->size, 
-                                &player->spriteInfo.walkSprite[player->spriteInfo.useWalkClip]);
+                                &player->spriteInfo.walkSprite[frame / 4]);
         gpxEngine->renderUpdate();
 
+        // if (player->isMove) {
+        //     ++frame;
+        //     if (frame / 4 >= 3) {
+        //         frame = 0;
+        //     }
+        // }
+        // else {
+        //     frame = 0;
+        // }
+        
+
         // Free CPU resources
-        SDL_Delay(1);
+        // SDL_Delay(1);
     }
 }
 
