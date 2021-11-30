@@ -2,6 +2,7 @@
 #include "../headers/physicsEngine.h"
 
 Character::Character() {
+    // TODO Store a character setting to json file
     size.x = 0;
     size.y = 0;
     size.w = 0;

@@ -24,6 +24,9 @@ GraphicsEngine::GraphicsEngine() {
 }
 
 GraphicsEngine::~GraphicsEngine() {
+    textures.clear();
+    fonts.clear();
+
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
@@ -34,15 +37,15 @@ GraphicsEngine::~GraphicsEngine() {
  * @param  path     Path to the file
  * @return          Returns texture or nullptr if error occurred
 */
-SDL_Texture* GraphicsEngine::loadImage(std::string&& path) {
+WTexture* GraphicsEngine::loadImage(std::string&& path) {
     // Load image
     SDL_Texture* texture = IMG_LoadTexture(renderer, (imagesPath + path).c_str());
     if (!texture) {
         cerrErrorSDL("Load Image");
-        return texture;
     }
-    textures.insert({path, texture});
-    return texture;
+    WTexture* wtext = new WTexture(texture);
+    textures.insert({path, wtext});
+    return wtext;
 }
 
 /**
@@ -53,8 +56,9 @@ SDL_Texture* GraphicsEngine::loadImage(std::string&& path) {
 void GraphicsEngine::unloadImage(std::string&& path) {
     auto texture = textures.find(path);
     if (texture != textures.end()) {
-        SDL_DestroyTexture(texture->second);
+        SDL_DestroyTexture(texture->second->getTexture());
         textures.erase(texture);
+        delete texture->second;
     }
     else {
         std::cerr << "Can't unload image: The texture with that name." << std::endl;
@@ -67,7 +71,7 @@ void GraphicsEngine::unloadImage(std::string&& path) {
  * @param textureName   The texture file name with a format (*.png, etc.)
  * @return SDL_Texture  Pointer to the texture or nullptr if it doesn't exist
  */
-SDL_Texture* GraphicsEngine::getImage(const std::string& textureName) {
+WTexture* GraphicsEngine::getImage(const std::string& textureName) {
     auto search = textures.find(textureName);
     if (search != textures.end()) {
         return search->second;
@@ -84,7 +88,7 @@ SDL_Texture* GraphicsEngine::getImage(const std::string& textureName) {
  */
 void GraphicsEngine::destroyAllTextures() {
     for (auto i : textures) {
-        SDL_DestroyTexture(i.second);
+        SDL_DestroyTexture(i.second->getTexture());
     }
     textures.clear();
 }
@@ -98,13 +102,13 @@ void GraphicsEngine::destroyAllTextures() {
  * @param h         Scaling height
  * @return          None
  */
-void GraphicsEngine::renderTexture(SDL_Texture* texture, int x, int y, int w, int h) {
+void GraphicsEngine::renderTexture(WTexture& texture, int x, int y, int w, int h) {
     SDL_Rect rect;
     rect.x = x;
     rect.y = y;
     rect.w = w;
     rect.h = h;
-    if (SDL_RenderCopy(renderer, texture, NULL, &rect) != 0) {
+    if (SDL_RenderCopy(renderer, texture.getTexture(), NULL, &rect) != 0) {
         cerrErrorSDL("Render Texture");
     }
 }
@@ -116,8 +120,8 @@ void GraphicsEngine::renderTexture(SDL_Texture* texture, int x, int y, int w, in
  * @param clip      A part of the image that will draw (nullptr will draw whole image)
  * @return          None
  */
-void GraphicsEngine::renderTexture(SDL_Texture* texture, SDL_Rect target, SDL_Rect* clip) {
-    SDL_RenderCopy(renderer, texture, clip, &target);
+void GraphicsEngine::renderTexture(WTexture& texture, SDL_Rect target, SDL_Rect* clip) {
+    SDL_RenderCopy(renderer, texture.getTexture(), clip, &target);
 }
 
 /**
@@ -130,7 +134,7 @@ void GraphicsEngine::renderTexture(SDL_Texture* texture, SDL_Rect target, SDL_Re
  * @param clip      A part of the image that will draw
  * @return          None
  */
-void GraphicsEngine::renderTexture(SDL_Texture* texture, int x, int y, SDL_Rect* clip) {
+void GraphicsEngine::renderTexture(WTexture& texture, int x, int y, SDL_Rect* clip) {
     SDL_Rect target;
     target.x = x;
     target.y = y;
@@ -139,7 +143,7 @@ void GraphicsEngine::renderTexture(SDL_Texture* texture, int x, int y, SDL_Rect*
         target.h = clip->h;
     }
     else {
-        SDL_QueryTexture(texture, nullptr, nullptr, &target.w, &target.h);
+        SDL_QueryTexture(texture.getTexture(), nullptr, nullptr, &target.w, &target.h);
     }
     renderTexture(texture, target, clip);
 }
@@ -149,7 +153,7 @@ void GraphicsEngine::renderTexture(SDL_Texture* texture, int x, int y, SDL_Rect*
  * @param background    Pointer to image
  * @return              None
  */
-void GraphicsEngine::renderBackground(SDL_Texture* background) {
+void GraphicsEngine::renderBackground(WTexture& background) {
     int xTiles = SCREEN_WIDTH / (ZOOM * TILE_SIZE);
     int yTiles = SCREEN_HEIGHT / (ZOOM * TILE_SIZE);
 
@@ -182,23 +186,18 @@ void GraphicsEngine::renderBackground(SDL_Texture* background) {
  * @return          Pointer to the texture or nullptr if something went wrong
  */
 SDL_Texture* GraphicsEngine::renderText(const std::string& message, TTF_Font* font, SDL_Color color) {
-    if (font == nullptr) {
-        std::cerr << "RenderText Error: Empty font file!" << std::endl;
-        return nullptr;
-    }
+    if (font == nullptr)
+        cerrErrorSDL("RenderText");
 
     // Project text to the surface
     SDL_Surface* surface = TTF_RenderText_Blended(font, message.c_str(), color);
-    if (surface == nullptr) {
+    if (surface == nullptr)
         cerrErrorSDL("TTF_RenderText");
-        return nullptr;
-    }
 
     // Transform surface to texture
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (texture == nullptr) {
+    if (texture == nullptr)
         cerrErrorSDL("Texture creation");
-    }
 
     // Free memory
     SDL_FreeSurface(surface);
@@ -224,17 +223,13 @@ void GraphicsEngine::renderUpdate() {
  * 
  * @param fontName  The file name of the font with a format (*.ttf)
  * @param fontSize  The size of the font
- * @return true     If all font is normally loaded
- * @return false    If coundn't open the font
  */
-bool GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
+void GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
     TTF_Font* font = TTF_OpenFont((fontsPath + fontName).c_str(), fontSize);
-    if (font == nullptr) {
+    if (font == nullptr)
         cerrErrorSDL("Open font");
-        return false;
-    }
+
     fonts.insert({fontName, font});
-    return true;
 }
 
 /**
@@ -254,7 +249,36 @@ TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     
 }
 
-
-void GraphicsEngine::drawSprite(const Character& person) {
+/**
+ * @brief Draw a animated sprite
+ * 
+ * @param person Reference to the object which will be animated
+ */
+void GraphicsEngine::drawSprite(const Character& object) {
     
+}
+
+/**
+ * @brief Delete a background from the texture
+ * 
+ * @param path Location of the texture relative to the "/images/" folder
+ * @param R    Red component of the color (HEX)
+ * @param G    Green component of the color (HEX)
+ * @param B    Blue component of the color (HEX)
+ * @return Pointer to the texture wrapper class (WTexture*)
+ */
+WTexture* GraphicsEngine::loadTextureWithoutBackground(const std::string& path, uint8_t R, uint8_t G, uint8_t B) {
+    SDL_Surface* surf = IMG_Load((imagesPath + path).c_str());
+    if (surf == nullptr)
+        cerrErrorSDL("LoadTextureWithoutBackground - IMG_Load"); 
+
+    SDL_SetColorKey(surf, SDL_TRUE, SDL_MapRGB(surf->format, 0xFF, 0xFF, 0xFF));
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surf);
+    if (!texture)
+        cerrErrorSDL("LoadTextureWithoutBackground - createTextureFromSurface");
+
+    WTexture* wtext = new WTexture(texture);
+    textures.insert({path, wtext});
+    return wtext;
 }

@@ -1,7 +1,5 @@
 #include "../headers/application.h"
  
- // TODO Store all textures in one place (I don't know where yet)
-
 Application::Application() {
 }
 
@@ -47,25 +45,10 @@ void Application::run() {
     playerSetup(player);
 
     // Load texture
-    std::unique_ptr<WTexture> backgroundTile(new WTexture(gpxEngine->loadImage("basictiles.png")));
+    std::unique_ptr<WTexture> backgroundTile(gpxEngine->loadImage("basictiles.png"));
 
-    // TODO Wrap this in more useful gpx engine method
-    // If we want to delete background of the texture that do this
-    SDL_Surface* surf = IMG_Load("images/player/swordman_white_back.png");
-    if (surf == nullptr) {
-        std::cout << " Error: " << SDL_GetError() << std::endl; 
-        return;
-    }
-    SDL_SetColorKey(surf, SDL_TRUE, SDL_MapRGB(surf->format, 0xFF, 0xFF, 0xFF));
-
-    player->texture->setTexture(SDL_CreateTextureFromSurface(gpxEngine->getRenderer(), surf));
-
-    // player->texture->setTexture(gpxEngine->loadImage("player/swordman.png"));
-    if (!backgroundTile->getTexture() || !player->texture->getTexture()) {
-        gpxEngine->destroyAllTextures();
-        cleanup();
-        return;
-    }
+    // Delete background
+    player->texture.reset(gpxEngine->loadTextureWithoutBackground("player/swordman_white_back.png", 0xFF, 0xFF, 0xFF));
     
     // Setting the font
     gpxEngine->addFont("font.ttf", 48);
@@ -87,7 +70,6 @@ void Application::run() {
     int fontX = (SCREEN_WIDTH - fontWidth) / 2;
     int fontY = 10;
 
-
     bool quit = false;
     SDL_Event event;
     const uint8_t* state = SDL_GetKeyboardState(NULL);
@@ -107,7 +89,7 @@ void Application::run() {
 
         while(frameTime > 0.0) {
             double deltaTime = std::min(frameTime, dt);
-            
+
             // Event processing
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
@@ -133,25 +115,21 @@ void Application::run() {
 
         // Clear window
         gpxEngine->renderClear();
-        gpxEngine->renderBackground(backgroundTile->getTexture());
-        gpxEngine->renderTexture(textImage->getTexture(), fontX, fontY);
-        gpxEngine->renderTexture(player->texture->getTexture(), player->size, 
+        gpxEngine->renderBackground(*backgroundTile);
+        gpxEngine->renderTexture(*textImage, fontX, fontY);
+        gpxEngine->renderTexture(*player->texture, player->size, 
                                 &player->spriteInfo.walkSprite[frame / 4]);
         gpxEngine->renderUpdate();
 
-        // if (player->isMove) {
-        //     ++frame;
-        //     if (frame / 4 >= 3) {
-        //         frame = 0;
-        //     }
-        // }
-        // else {
-        //     frame = 0;
-        // }
-        
-
-        // Free CPU resources
-        // SDL_Delay(1);
+        if (player->isMove) {
+            ++frame;
+            if (frame / 4 >= 3) {
+                frame = 0;
+            }
+        }
+        else {
+            frame = 0;
+        }
     }
 }
 

@@ -44,9 +44,14 @@ std::vector<std::string> parseApplicationInput(int argc, char** argv) {
 }
 
 /**
- * @brief Send SDL error string to std::cerr stream
+ * @brief Create a message box and exit a program
  */
 void cerrErrorSDL(std::string&& str) 
 { 
-    std::cout << str + " Error: " << SDL_GetError() << std::endl; 
+    std::cout << str + " Error: " << SDL_GetError() << std::endl;\
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                         (str + " error").c_str(),
+                         SDL_GetError(),
+                         NULL);
+    std::_Exit(1);
 }
