@@ -9,7 +9,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-#include "setting.h"
+#include "settings.h"
 #include "wtexture.h"
 
 enum Directions {

@@ -50,25 +50,17 @@ void Application::run() {
     // Delete background
     player->texture.reset(gpxEngine->loadTextureWithoutBackground("player/swordman_white_back.png", 0xFF, 0xFF, 0xFF));
     
+    // TODO Maybe create an font wrapper
     // Setting the font
-    gpxEngine->addFont("font.ttf", 48);
+    std::unique_ptr<WFont> font(gpxEngine->addFont("font.ttf", 48));
 
-    SDL_Color fontColor = {255, 255, 255, 255};
-    std::unique_ptr<WTexture> textImage(new WTexture());
-    textImage->setTexture(gpxEngine->renderText("Best Rogue Like ever!", gpxEngine->getFont("font.ttf"), fontColor));
-    if (textImage->getTexture() == nullptr) {
-        gpxEngine->destroyAllTextures();
-        cleanup();
-        return;
-    }
+    // Configure the font
+    // SDL_Color fontColor = {255, 255, 255, 255};
+    std::unique_ptr<WTexture> fontTexture(
+        gpxEngine->renderText("Best Rogue Like ever!", *font, SDL_Color({255, 255, 255, 255})));
 
-    int fontWidth;
-    int fontHeight;
-    SDL_QueryTexture(textImage->getTexture(), nullptr, nullptr, &fontWidth, &fontHeight);
-    textImage->setWidth(fontWidth);
-    textImage->setHeigth(fontHeight);
-    int fontX = (SCREEN_WIDTH - fontWidth) / 2;
-    int fontY = 10;
+    fontTexture->setX((SCREEN_WIDTH - fontTexture->getWidth()) / 2);
+    fontTexture->setY(10);
 
     bool quit = false;
     SDL_Event event;
@@ -79,7 +71,6 @@ void Application::run() {
     double dt = 1/60.0;
     double currentTime = SDL_GetTicks() / 1000.0;     // Turn to seconds
 
-    // TODO Delete this
     int frame = 0;
 
     while (!quit) {
@@ -116,7 +107,7 @@ void Application::run() {
         // Clear window
         gpxEngine->renderClear();
         gpxEngine->renderBackground(*backgroundTile);
-        gpxEngine->renderTexture(*textImage, fontX, fontY);
+        gpxEngine->renderTexture(*fontTexture, fontTexture->getX(), fontTexture->getY());
         gpxEngine->renderTexture(*player->texture, player->size, 
                                 &player->spriteInfo.walkSprite[frame / 4]);
         gpxEngine->renderUpdate();

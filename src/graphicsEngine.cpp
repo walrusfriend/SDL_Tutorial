@@ -24,9 +24,6 @@ GraphicsEngine::GraphicsEngine() {
 }
 
 GraphicsEngine::~GraphicsEngine() {
-    textures.clear();
-    fonts.clear();
-
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 }
@@ -185,34 +182,47 @@ void GraphicsEngine::renderBackground(WTexture& background) {
  * @param fontSize  Size of the text
  * @return          Pointer to the texture or nullptr if something went wrong
  */
-SDL_Texture* GraphicsEngine::renderText(const std::string& message, TTF_Font* font, SDL_Color color) {
-    if (font == nullptr)
-        cerrErrorSDL("RenderText");
+WTexture* GraphicsEngine::renderText(const std::string& message, WFont& font, SDL_Color color) {
+    if (font.getFont() == nullptr)
+        cerrErrorSDL("RenderText - font == nullptr");
 
     // Project text to the surface
-    SDL_Surface* surface = TTF_RenderText_Blended(font, message.c_str(), color);
+    SDL_Surface* surface = TTF_RenderText_Blended(font.getFont(), message.c_str(), color);
     if (surface == nullptr)
-        cerrErrorSDL("TTF_RenderText");
+        cerrErrorSDL("RenderText - couldn't project the font to the surface");
 
     // Transform surface to texture
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (texture == nullptr)
-        cerrErrorSDL("Texture creation");
+        cerrErrorSDL("RenderText - failed when creating from the surface to the texture");
+
+    // Set font texture size
+    int fontWidth;
+    int fontHeight;
+    SDL_QueryTexture(texture, nullptr, nullptr, &fontWidth, &fontHeight);
+    WTexture* wtext = new WTexture(texture, fontWidth, fontHeight);
+
+    // Add texture to the texture map
+    auto search = fonts.find(font.getName());
+    if (search == fonts.end()) {
+        cerrErrorSDL("renderText - font couldn't find");
+    }
+    textures.insert({message + font.getName(), wtext});
 
     // Free memory
     SDL_FreeSurface(surface);
-    return texture;
+    return wtext;
 }
 
 /**
- * Clear the renderer
+ * @brief Clear the renderer
  */
 void GraphicsEngine::renderClear() {
     SDL_RenderClear(renderer);
 }
 
 /**
- * Update the renderer
+ * @brief Update the renderer
  */
 void GraphicsEngine::renderUpdate() {
     SDL_RenderPresent(renderer);
@@ -223,13 +233,16 @@ void GraphicsEngine::renderUpdate() {
  * 
  * @param fontName  The file name of the font with a format (*.ttf)
  * @param fontSize  The size of the font
+ * @return A raw pointer to the font wrapper
  */
-void GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
+WFont* GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
     TTF_Font* font = TTF_OpenFont((fontsPath + fontName).c_str(), fontSize);
     if (font == nullptr)
         cerrErrorSDL("Open font");
 
-    fonts.insert({fontName, font});
+    WFont* wfont = new WFont(font, fontName);
+    fonts.insert({fontName, wfont});
+    return wfont;
 }
 
 /**
@@ -241,7 +254,7 @@ void GraphicsEngine::addFont(const std::string& fontName, const int& fontSize) {
 TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     auto search = fonts.find(fontName);
     if (search != fonts.end()) {
-        return search->second;
+        return search->second->getFont();
     }
     else {
         return nullptr;
@@ -249,6 +262,7 @@ TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     
 }
 
+// TODO Finish this method
 /**
  * @brief Draw a animated sprite
  * 
