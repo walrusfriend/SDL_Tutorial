@@ -64,7 +64,7 @@ void Application::run() {
 
     bool quit = false;
     SDL_Event event;
-    const uint8_t* state = SDL_GetKeyboardState(NULL);
+    keyboardState = SDL_GetKeyboardState(NULL);
     
     // Setup the timings
     double t = 0.0;
@@ -88,16 +88,21 @@ void Application::run() {
                 }
 
                 if (event.type == SDL_KEYDOWN) {
-                    if (state[SDL_SCANCODE_W] or state[SDL_SCANCODE_S] or state[SDL_SCANCODE_A] or state[SDL_SCANCODE_D])
+                    if (keyboardState[SDL_SCANCODE_W] or keyboardState[SDL_SCANCODE_S] or 
+                        keyboardState[SDL_SCANCODE_A] or keyboardState[SDL_SCANCODE_D]) {
                         player->isMove = true;
-                    else
+                        player->moveDirection = definePlayerMovementDirection();
+                    }
+                    else {
                         player->isMove = false;
+                    }
                 }
             }
 
+            // Characters movement
             player->move(deltaTime);
 
-            if (state[SDL_SCANCODE_ESCAPE])
+            if (keyboardState[SDL_SCANCODE_ESCAPE])
                 quit = true;
 
             frameTime -= deltaTime;
@@ -109,7 +114,7 @@ void Application::run() {
         gpxEngine->renderBackground(*backgroundTile);
         gpxEngine->renderTexture(*fontTexture, fontTexture->getX(), fontTexture->getY());
         gpxEngine->renderTexture(*player->texture, player->size, 
-                                &player->spriteInfo.walkSprite[frame / 4]);
+                                &player->spriteInfo.walkSprite[frame / 4 + player->spriteInfo.currentRotation]);
         gpxEngine->renderUpdate();
 
         if (player->isMove) {
@@ -155,7 +160,7 @@ void Application::playerSetup(std::unique_ptr<Character>& player) {
     // player texture states
     player->spriteInfo.numberOfStepInSprite = 3;
     player->spriteInfo.rotateLeft = 3;
-    player->spriteInfo.roteteRight = 0;
+    player->spriteInfo.rotateRight = 0;
     player->spriteInfo.rotateDown = -1;
     player->spriteInfo.rotateUp = -1;
     player->spriteInfo.clipsNumber = 6;
@@ -170,4 +175,34 @@ void Application::playerSetup(std::unique_ptr<Character>& player) {
     }
 
     player->scale(ZOOM);
+}
+
+int Application::definePlayerMovementDirection() {
+    if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_A]) {
+        return Directions::UP_LEFT;
+    }
+    else if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_D]) {
+        return Directions::UP_RIGHT;
+    }
+    else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_A]) {
+        return Directions::DOWN_LEFT;
+    }
+    else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_D]) {
+        return Directions::DOWN_RIGHT;
+    }
+    else if (keyboardState[SDL_SCANCODE_W]) {
+        return Directions::UP;
+    }
+    else if (keyboardState[SDL_SCANCODE_S]) {
+        return Directions::DOWN;
+    }
+    else if (keyboardState[SDL_SCANCODE_A]) {
+        return Directions::LEFT;
+    }
+    else if (keyboardState[SDL_SCANCODE_D]) {
+        return Directions::RIGHT;
+    }
+    else {
+        cerrErrorSDL("Player movement direction definition", "Couldn't define a direction");
+    }
 }

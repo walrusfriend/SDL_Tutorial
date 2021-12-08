@@ -13,6 +13,8 @@
 #include "wtexture.h"
 
 enum Directions {
+    ERROR = -1,
+    NONE,
     UP,
     DOWN,
     LEFT,
@@ -29,4 +31,5 @@ enum Directions {
 extern bool vscodeDebug;
 
 // Send error to the cerr output stream
-void cerrErrorSDL(std::string&& str);           
+void cerrErrorSDL(std::string&& str);
+void cerrErrorSDL(std::string&& str, std::string&& message);

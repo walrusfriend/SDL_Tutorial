@@ -45,6 +45,8 @@ std::vector<std::string> parseApplicationInput(int argc, char** argv) {
 
 /**
  * @brief Create a message box and exit a program
+ * 
+ * @param str Error identificator string
  */
 void cerrErrorSDL(std::string&& str) 
 { 
@@ -52,6 +54,22 @@ void cerrErrorSDL(std::string&& str)
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                          (str + " error").c_str(),
                          SDL_GetError(),
+                         NULL);
+    std::_Exit(1);
+}
+
+/**
+ * @brief Create a message box and exit a program
+ * 
+ * @param str Error identificator string
+ * @param message Error description string
+ */
+void cerrErrorSDL(std::string&& str, std::string&& message) 
+{ 
+    std::cout << str + " Error: " << message << std::endl;\
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+                         (str + " error").c_str(),
+                         message.c_str(),
                          NULL);
     std::_Exit(1);
 }

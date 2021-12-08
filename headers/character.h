@@ -6,9 +6,10 @@
 struct SpriteInfo {
     std::vector<SDL_Rect> walkSprite;
     int rotateLeft;
-    int roteteRight;
+    int rotateRight;
     int rotateUp;
     int rotateDown;
+    int currentRotation;
     int numberOfStepInSprite;
     int useWalkClip;
     int clipsNumber;
@@ -33,6 +34,9 @@ public:
     float velocity;
     bool isMove;
 
+    // Move direction
+    int moveDirection;
+
 public:
     Character();
     ~Character();
@@ -43,4 +47,5 @@ public:
 
 private:
     const uint8_t* keyboardState;
+    int scaleFactor;
 };

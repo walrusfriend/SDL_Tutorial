@@ -12,10 +12,12 @@ Character::Character() {
 
     prevSize = size;
 
+    moveDirection = Directions::NONE;
     spriteInfo.rotateLeft = 0;
-    spriteInfo.roteteRight = 0;
+    spriteInfo.rotateRight = 0;
     spriteInfo.rotateUp = 0;
     spriteInfo.rotateDown = 0;
+    spriteInfo.currentRotation = 0;
     spriteInfo.numberOfStepInSprite = 0;
     spriteInfo.useWalkClip = 0;
     spriteInfo.clipsNumber = 0;
@@ -38,8 +40,6 @@ void Character::move(double dt) {
     // When we step on diagonal direction, an object move at a distance of hypotenuse
     // Therefore, need to define the value of X and Y components
     float rootOf2 = 1.41421356237f;             // The root of 2 required to calculate the diagonal distance
-    int diagStepSize = stepSize / rootOf2;
-    int oldStep = stepSize;
 
     // TODO Fix priority of the W and A
     if (isMove) {
@@ -47,21 +47,25 @@ void Character::move(double dt) {
             size.y += -velocity * dt / rootOf2;
             size.x += -velocity * dt / rootOf2;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateLeft;
         }
         else if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_D]) {
             size.y += -velocity * dt / rootOf2;
             size.x += velocity * dt / rootOf2;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateRight;
         }
         else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_A]) {
             size.y += velocity * dt / rootOf2;
             size.x += -velocity * dt / rootOf2;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateLeft;
         }
         else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_D]) {
             size.y += velocity * dt / rootOf2;
             size.x += velocity * dt / rootOf2;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateRight;
         }
         else if (keyboardState[SDL_SCANCODE_W]) {
             size.y += -velocity * dt;
@@ -74,10 +78,12 @@ void Character::move(double dt) {
         else if (keyboardState[SDL_SCANCODE_A]) {
             size.x += -velocity * dt;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateLeft;
         }
         else if (keyboardState[SDL_SCANCODE_D]) {
             size.x += velocity * dt;
             checkCollisionWithBorders();
+            spriteInfo.currentRotation = spriteInfo.rotateRight;
         }
         else
             isMove = false;
@@ -95,6 +101,8 @@ void Character::scale(int zoom) {
     stepSize *= zoom;
 
     prevSize = size;
+
+    scaleFactor = zoom;
 }
 
 /**

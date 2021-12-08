@@ -22,4 +22,8 @@ private:
     std::unique_ptr<GraphicsEngine> gpxEngine;
     std::unique_ptr<Character> player;
 
+    const uint8_t* keyboardState;
+
+private:
+    int definePlayerMovementDirection();
 };
