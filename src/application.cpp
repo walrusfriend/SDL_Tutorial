@@ -50,12 +50,10 @@ void Application::run() {
     // Delete background
     player->texture.reset(gpxEngine->loadTextureWithoutBackground("player/swordman_white_back.png", 0xFF, 0xFF, 0xFF));
     
-    // TODO Maybe create an font wrapper
     // Setting the font
     std::unique_ptr<WFont> font(gpxEngine->addFont("font.ttf", 48));
 
     // Configure the font
-    // SDL_Color fontColor = {255, 255, 255, 255};
     std::unique_ptr<WTexture> fontTexture(
         gpxEngine->renderText("Best Rogue Like ever!", *font, SDL_Color({255, 255, 255, 255})));
 
@@ -91,15 +89,19 @@ void Application::run() {
                     if (keyboardState[SDL_SCANCODE_W] or keyboardState[SDL_SCANCODE_S] or 
                         keyboardState[SDL_SCANCODE_A] or keyboardState[SDL_SCANCODE_D]) {
                         player->isMove = true;
-                        player->moveDirection = definePlayerMovementDirection();
                     }
-                    else {
-                        player->isMove = false;
+
+                    if (keyboardState[SDL_SCANCODE_SPACE]) {
+                        player->isAttack = true;
                     }
                 }
+
+                
             }
 
             // Characters movement
+            player->moveDirection = definePlayerMovementDirection();
+            player->attack();
             player->move(deltaTime);
 
             if (keyboardState[SDL_SCANCODE_ESCAPE])
@@ -109,23 +111,12 @@ void Application::run() {
             t += deltaTime;
         }
 
-        // Clear window
+        // Update the screen
         gpxEngine->renderClear();
         gpxEngine->renderBackground(*backgroundTile);
         gpxEngine->renderTexture(*fontTexture, fontTexture->getX(), fontTexture->getY());
-        gpxEngine->renderTexture(*player->texture, player->size, 
-                                &player->spriteInfo.walkSprite[frame / 4 + player->spriteInfo.currentRotation]);
+        player->update();
         gpxEngine->renderUpdate();
-
-        if (player->isMove) {
-            ++frame;
-            if (frame / 4 >= 3) {
-                frame = 0;
-            }
-        }
-        else {
-            frame = 0;
-        }
     }
 }
 
@@ -152,10 +143,10 @@ void Application::playerSetup(std::unique_ptr<Character>& player) {
     int y = (SCREEN_HEIGHT - player->size.h) / 2;
     player->size.x = x;
     player->size.y = y;
-    player->stepSize = TILE_SIZE;
     player->walkTextureSize = 16;
     player->attackTextureSize = 48;
     player->size.w = player->walkTextureSize;
+    player->velocity = 250;
 
     // player texture states
     player->spriteInfo.numberOfStepInSprite = 3;
@@ -165,6 +156,7 @@ void Application::playerSetup(std::unique_ptr<Character>& player) {
     player->spriteInfo.rotateUp = -1;
     player->spriteInfo.clipsNumber = 6;
     player->spriteInfo.useWalkClip = 0;
+    player->spriteInfo.moveFramerate = 100;
     for (int i = 0; i < player->spriteInfo.clipsNumber; ++i) {
         SDL_Rect tempRect;
         tempRect.x = i % player->spriteInfo.numberOfStepInSprite * player->size.w;
@@ -203,6 +195,6 @@ int Application::definePlayerMovementDirection() {
         return Directions::RIGHT;
     }
     else {
-        cerrErrorSDL("Player movement direction definition", "Couldn't define a direction");
+        return Directions::NONE;
     }
 }

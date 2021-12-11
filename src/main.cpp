@@ -9,7 +9,6 @@ std::vector<std::string> parseApplicationInput(int argc, char** argv);
 
 int main(int argc, char* argv[]) {
 
-    // TODO Use "argc" and "argv" to setup debug mode or something else
     // Read the input and convert it to a normal types
     std::vector<std::string> applicationInput = std::move(parseApplicationInput(argc, argv));
 
@@ -28,7 +27,13 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// TODO Finish this feature
+/**
+ * @brief Parse application input
+ * 
+ * @param argc Number of arguments
+ * @param argv Pointer to arguments char array
+ * @return std::vector of parsed arguments
+ */
 std::vector<std::string> parseApplicationInput(int argc, char** argv) {
     std::vector<std::string> vec;
 

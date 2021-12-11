@@ -3,7 +3,7 @@
 
 #include <string>
 
-// TODO Make .json with parameters whitc will be loaded when program is start
+// TODO Make .json with parameters which will be loaded when program is start
 
 // Set screen size
 const int SCREEN_WIDTH = 1024;

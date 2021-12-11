@@ -1,10 +1,13 @@
 #pragma once
 
-#include "main.h"
 #include <vector>
+
+#include "main.h"
 
 struct SpriteInfo {
     std::vector<SDL_Rect> walkSprite;
+
+    // Movement section
     int rotateLeft;
     int rotateRight;
     int rotateUp;
@@ -13,14 +16,18 @@ struct SpriteInfo {
     int numberOfStepInSprite;
     int useWalkClip;
     int clipsNumber;
+    int moveFramerate;          // Number of ms between frames
+    SDL_RendererFlip flip;
+
+    // Attack section
 };
 
 class Character {
 public:
-    // Size settings
-    SDL_Rect size;
-    SDL_Rect prevSize;
-    int stepSize;
+    // Current size and position
+    SDL_Rect size;          
+    // Previous size and position used to return to the old state after failing a collision check or something else
+    SDL_Rect prevSize;      
 
     // Texture settings
     std::unique_ptr<WTexture> texture;
@@ -33,6 +40,7 @@ public:
     // Physics parameters
     float velocity;
     bool isMove;
+    bool isAttack;
 
     // Move direction
     int moveDirection;
@@ -44,6 +52,8 @@ public:
     void move(double dt);
     void scale(int zoom);
     void checkCollisionWithBorders();
+    void update();
+    void attack();
 
 private:
     const uint8_t* keyboardState;

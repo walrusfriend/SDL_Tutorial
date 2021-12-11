@@ -1,13 +1,10 @@
 #include "../headers/character.h"
 #include "../headers/physicsEngine.h"
+#include "../headers/graphicsEngine.h"
 
 Character::Character() {
     // TODO Store a character setting to json file
-    size.x = 0;
-    size.y = 0;
-    size.w = 0;
-    size.h = 0;
-    stepSize = 0;
+    size = {0, 0, 0, 0};
     texture.reset(new WTexture());
 
     prevSize = size;
@@ -21,9 +18,12 @@ Character::Character() {
     spriteInfo.numberOfStepInSprite = 0;
     spriteInfo.useWalkClip = 0;
     spriteInfo.clipsNumber = 0;
+    spriteInfo.moveFramerate = 0;          // Number of ms between frames
+    spriteInfo.flip = SDL_FLIP_NONE;
 
-    velocity = 250;
+    velocity = 0;
     isMove = false;
+    isAttack = false;
 
     keyboardState = SDL_GetKeyboardState(NULL); 
 }
@@ -42,48 +42,61 @@ void Character::move(double dt) {
     float rootOf2 = 1.41421356237f;             // The root of 2 required to calculate the diagonal distance
 
     // TODO Fix priority of the W and A
-    if (isMove) {
-        if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_A]) {
-            size.y += -velocity * dt / rootOf2;
-            size.x += -velocity * dt / rootOf2;
+    if (isMove and !isAttack) {
+        if (keyboardState[SDL_SCANCODE_LSHIFT]) {
+            velocity = 500;
+        }
+        else {
+            velocity = 250;
+        }
+
+        if (moveDirection == Directions::UP_LEFT) {
+            size.y += static_cast<int>(-velocity * dt / rootOf2);
+            size.x += static_cast<int>(-velocity * dt / rootOf2);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateLeft;
+            spriteInfo.flip = SDL_FLIP_HORIZONTAL;
         }
-        else if (keyboardState[SDL_SCANCODE_W] and keyboardState[SDL_SCANCODE_D]) {
-            size.y += -velocity * dt / rootOf2;
-            size.x += velocity * dt / rootOf2;
+        else if (moveDirection == Directions::UP_RIGHT) {
+            size.y += static_cast<int>(-velocity * dt / rootOf2);
+            size.x += static_cast<int>(velocity * dt / rootOf2);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateRight;
+            spriteInfo.flip = SDL_FLIP_NONE;
         }
-        else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_A]) {
-            size.y += velocity * dt / rootOf2;
-            size.x += -velocity * dt / rootOf2;
+        else if (moveDirection == Directions::DOWN_LEFT) {
+            size.y += static_cast<int>(velocity * dt / rootOf2);
+            size.x += static_cast<int>(-velocity * dt / rootOf2);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateLeft;
+            spriteInfo.flip = SDL_FLIP_HORIZONTAL;
         }
-        else if (keyboardState[SDL_SCANCODE_S] and keyboardState[SDL_SCANCODE_D]) {
-            size.y += velocity * dt / rootOf2;
-            size.x += velocity * dt / rootOf2;
+        else if (moveDirection == Directions::DOWN_RIGHT) {
+            size.y += static_cast<int>(velocity * dt / rootOf2);
+            size.x += static_cast<int>(velocity * dt / rootOf2);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateRight;
+            spriteInfo.flip = SDL_FLIP_NONE;
         }
-        else if (keyboardState[SDL_SCANCODE_W]) {
-            size.y += -velocity * dt;
+        else if (moveDirection == Directions::UP) {
+            size.y += static_cast<int>(-velocity * dt);
             checkCollisionWithBorders();
         }
-        else if (keyboardState[SDL_SCANCODE_S]) {
-            size.y += velocity * dt;
+        else if (moveDirection == Directions::DOWN) {
+            size.y += static_cast<int>(velocity * dt);
             checkCollisionWithBorders();
         }
-        else if (keyboardState[SDL_SCANCODE_A]) {
-            size.x += -velocity * dt;
+        else if (moveDirection == Directions::LEFT) {
+            size.x += static_cast<int>(-velocity * dt);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateLeft;
+            spriteInfo.flip = SDL_FLIP_HORIZONTAL;
         }
-        else if (keyboardState[SDL_SCANCODE_D]) {
-            size.x += velocity * dt;
+        else if (moveDirection == Directions::RIGHT) {
+            size.x += static_cast<int>(velocity * dt);
             checkCollisionWithBorders();
             spriteInfo.currentRotation = spriteInfo.rotateRight;
+            spriteInfo.flip = SDL_FLIP_NONE;
         }
         else
             isMove = false;
@@ -98,7 +111,6 @@ void Character::move(double dt) {
 void Character::scale(int zoom) {
     size.w *= zoom;
     size.h *= zoom;
-    stepSize *= zoom;
 
     prevSize = size;
 
@@ -114,4 +126,51 @@ void Character::checkCollisionWithBorders() {
         size = prevSize;
     else
         prevSize = size;
+}
+
+/**
+ * @brief Update character sprite on the screen
+ * 
+ */
+void Character::update() {
+    int currentFrame = 0;
+    
+    if (isMove) {
+        currentFrame = SDL_GetTicks() / spriteInfo.moveFramerate % spriteInfo.numberOfStepInSprite;
+    }
+    
+    // Take into account character movement direction
+    currentFrame += spriteInfo.currentRotation;
+
+    GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame]);
+    // GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame], 
+    //                               spriteInfo.flip, texture->getAngle());
+}
+
+/**
+ * @brief Make an attack
+ * 
+ */
+void Character::attack() {
+    if (isAttack) {
+        // Change movement texture size to attack texture size
+        
+        // Check collition with other objects
+
+        // Draw attack animation
+
+        // Cancel attack
+        // int currentFrame = 0;
+    
+        // if (isMove) {
+        //     currentFrame = SDL_GetTicks() / spriteInfo.moveFramerate % spriteInfo.numberOfStepInSprite;
+        // }
+        
+        // // GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame]);
+        // GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame], 
+        //                           spriteInfo.flip, texture->getAngle());
+    }
+    else {
+        // Return size
+    }
 }

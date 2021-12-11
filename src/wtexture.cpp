@@ -2,13 +2,30 @@
 #include "../headers/main.h"
 
 WTexture::WTexture() :
-    texture(nullptr), width(0), height(0)
+    texture(nullptr), size({0}), angle(0)
 {
 }
 
-WTexture::WTexture(SDL_Texture* texture, int width, int height) :
-    texture(texture), width(width), height(height)
+WTexture::WTexture(SDL_Texture* texture, int width, int height,  int x, int y, float angle, SDL_RendererFlip flip) :
+    angle(angle)
 {
+    if (texture == nullptr)
+        cerrErrorSDL("Texture wrapper constructor", "Input texture is a nullptr");
+
+    this->texture = texture;
+    
+    size.w = width;
+    size.h = height;
+    size.x = x;
+    size.y = y;
+}
+
+WTexture::WTexture(SDL_Texture* texture, SDL_Rect size, float angle, SDL_RendererFlip flip) :
+    size(size), angle(angle)
+{
+    if (texture == nullptr)
+        cerrErrorSDL("Texture wrapper constructor", "Input texture is a nullptr");
+
     this->texture = texture;
 }
 
@@ -23,41 +40,40 @@ void WTexture::clear() {
     if (texture != nullptr) {
         SDL_DestroyTexture(texture);
         texture = nullptr;
-        width = 0;
-        height = 0;
+        size = {0};
     }
 }
 
-void WTexture::setWidth(int newWidth) {
-    width = newWidth;
+void WTexture::setWidth(int width) {
+    size.w = width;
 }
 
-void WTexture::setHeigth(int newHeight) {
-    height = newHeight;
+void WTexture::setHeigth(int height) {
+    size.h = height;
 }
 
 const int WTexture::getWidth() {
-    return width;
+    return size.w;
 }
 
 const int WTexture::getHeight() {
-    return height;
+    return size.h;
 }
 
-void WTexture::setX(int newX) {
-    x = newX;
+void WTexture::setX(int x) {
+    size.x = x;
 }
 
-void WTexture::setY(int newY) {
-    y = newY;
+void WTexture::setY(int y) {
+    size.y = y;
 }
 
 const int WTexture::getX() {
-    return x;
+    return size.x;
 }
 
 const int WTexture::getY() {
-    return y;
+    return size.y;
 }
 
 SDL_Texture* WTexture::getTexture() {
@@ -79,4 +95,17 @@ void WTexture::setName(const std::string& newName) {
 
 std::string WTexture::getName() {
     return name;
+}
+
+/**
+ * @brief Set rotation angle for the image
+ * 
+ * @param newAngle An angle value in degrees
+ */
+void WTexture::setAngle(const float& newAngle) {
+    angle = newAngle;
+}
+
+float WTexture::getAngle() {
+    return angle;
 }

@@ -41,6 +41,7 @@ WTexture* GraphicsEngine::loadImage(std::string&& path) {
         cerrErrorSDL("Load Image");
     }
     WTexture* wtext = new WTexture(texture);
+    wtext->setName(path);
     textures.insert({path, wtext});
     return wtext;
 }
@@ -111,17 +112,6 @@ void GraphicsEngine::renderTexture(WTexture& texture, int x, int y, int w, int h
 }
 
 /**
- * Draw image to target rect
- * @param texture   Pointer to the texture to draw
- * @param target    The rect in which you will draw
- * @param clip      A part of the image that will draw (nullptr will draw whole image)
- * @return          None
- */
-void GraphicsEngine::renderTexture(WTexture& texture, SDL_Rect target, SDL_Rect* clip) {
-    SDL_RenderCopy(renderer, texture.getTexture(), clip, &target);
-}
-
-/**
  * Draw original image or its part to certain point (x,y)
  * If you draw the whole image, its size will be used
  * If you draw only a part of the image, the size of the part will be used
@@ -143,6 +133,23 @@ void GraphicsEngine::renderTexture(WTexture& texture, int x, int y, SDL_Rect* cl
         SDL_QueryTexture(texture.getTexture(), nullptr, nullptr, &target.w, &target.h);
     }
     renderTexture(texture, target, clip);
+}
+
+/**
+ * @brief image to target rect
+ * 
+ * @param texture       Pointer to the texture to draw
+ * @param target        The rect in which you will draw
+ * @param clip          A part of the image that will draw (nullptr will draw whole image)
+ * @param flip          Set a vertical or horizontal reflection (None by default)
+ * @param angle         Set a rotation angle in degrees
+ * @param centerCoores  Point indicating the point around which image will be rotated
+ * @return              None
+ */
+void GraphicsEngine::renderTexture(WTexture& texture, SDL_Rect dest, SDL_Rect* clip, SDL_RendererFlip flip, 
+                                   float angle, SDL_Point* centerCoords)
+{
+    SDL_RenderCopyEx(renderer, texture.getTexture(), clip, &dest, angle, centerCoords, flip);
 }
 
 /**
@@ -200,7 +207,7 @@ WTexture* GraphicsEngine::renderText(const std::string& message, WFont& font, SD
     int fontWidth;
     int fontHeight;
     SDL_QueryTexture(texture, nullptr, nullptr, &fontWidth, &fontHeight);
-    WTexture* wtext = new WTexture(texture, fontWidth, fontHeight);
+    WTexture* wtext = new WTexture(texture, fontWidth, fontHeight, 0, 0);
 
     // Add texture to the texture map
     auto search = fonts.find(font.getName());
@@ -259,16 +266,6 @@ TTF_Font* GraphicsEngine::getFont(const std::string& fontName) {
     else {
         return nullptr;
     }
-    
-}
-
-// TODO Finish this method
-/**
- * @brief Draw a animated sprite
- * 
- * @param person Reference to the object which will be animated
- */
-void GraphicsEngine::drawSprite(const Character& object) {
     
 }
 
