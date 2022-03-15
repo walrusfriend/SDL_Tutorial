@@ -143,8 +143,6 @@ void Character::update() {
     currentFrame += spriteInfo.currentRotation;
 
     GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame]);
-    // GraphicsEngine::renderTexture(*texture, size, &spriteInfo.walkSprite[currentFrame], 
-    //                               spriteInfo.flip, texture->getAngle());
 }
 
 /**

@@ -60,6 +60,12 @@ void Application::run() {
     fontTexture->setX((SCREEN_WIDTH - fontTexture->getWidth()) / 2);
     fontTexture->setY(10);
 
+    // Set the cursor texture
+    cursorTexture.reset(gpxEngine->loadImage("cursor.png"));
+    SDL_Rect cursorSize = {0, 0, 32, 32};
+    SDL_Rect cursorImagePart = {0, 0, 16, 16};
+    SDL_ShowCursor(SDL_DISABLE);
+
     bool quit = false;
     SDL_Event event;
     keyboardState = SDL_GetKeyboardState(NULL);
@@ -83,6 +89,11 @@ void Application::run() {
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
                     quit = true;
+                }
+
+                if (event.type == SDL_MOUSEMOTION) {
+                    cursorSize.x = event.motion.x;
+                    cursorSize.y = event.motion.y;
                 }
 
                 if (event.type == SDL_KEYDOWN) {
@@ -116,6 +127,7 @@ void Application::run() {
         gpxEngine->renderBackground(*backgroundTile);
         gpxEngine->renderTexture(*fontTexture, fontTexture->getX(), fontTexture->getY());
         player->update();
+        gpxEngine->renderTexture(*cursorTexture, cursorSize, &cursorImagePart);
         gpxEngine->renderUpdate();
     }
 }

@@ -82,7 +82,7 @@ SDL_Texture* WTexture::getTexture() {
 
 void WTexture::setTexture(SDL_Texture* newTexture) {
     if (newTexture == nullptr) {
-        cerrErrorSDL("Texture::setTexture - a new texture points to a nullptr");
+        cerrErrorSDL("Texture::setTexture - a new texture points to a nullptr. Use clear to delete an image.");
     }
     
     clear();

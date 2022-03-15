@@ -29,9 +29,9 @@ GraphicsEngine::~GraphicsEngine() {
 }
 
 /**
- * @brief Load texture from file on the path "path" to texture map
+ * @brief Load texture from file
  * 
- * @param  path     Path to the file
+ * @param  path     The path to the file relative to the /image folder
  * @return          Returns texture or nullptr if error occurred
 */
 WTexture* GraphicsEngine::loadImage(std::string&& path) {
@@ -49,7 +49,7 @@ WTexture* GraphicsEngine::loadImage(std::string&& path) {
 /**
  * @brief Free memory from an image
  * 
- * @param texture The texture file name with a format (*.png, etc)
+ * @param path The texture file name with a format (*.png, etc)
  */
 void GraphicsEngine::unloadImage(std::string&& path) {
     auto texture = textures.find(path);

@@ -22,6 +22,8 @@ private:
     std::unique_ptr<GraphicsEngine> gpxEngine;
     std::unique_ptr<Character> player;
 
+    std::unique_ptr<WTexture> cursorTexture;
+
     const uint8_t* keyboardState;
 
 private:
